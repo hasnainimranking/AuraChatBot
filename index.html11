@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquid Glass Chatbot</title>
+
+<style>
+body{
+margin:0;
+font-family:sans-serif;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.chat-container{
+width:95%;
+max-width:500px;
+height:90vh;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(25px);
+border-radius:25px;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+box-shadow:0 0 40px rgba(0,0,0,0.5);
+}
+
+.chat-box{
+flex:1;
+padding:15px;
+overflow-y:auto;
+}
+
+.message{
+padding:10px 15px;
+margin:8px 0;
+border-radius:20px;
+max-width:80%;
+animation:fade 0.3s ease;
+}
+
+.user{
+background:linear-gradient(135deg,#4facfe,#00f2fe);
+align-self:flex-end;
+color:white;
+}
+
+.bot{
+background:rgba(255,255,255,0.2);
+color:white;
+}
+
+.input-box{
+display:flex;
+padding:10px;
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(20px);
+}
+
+input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:20px;
+outline:none;
+}
+
+button{
+margin-left:8px;
+padding:10px 15px;
+border:none;
+border-radius:20px;
+background:linear-gradient(135deg,#ff9966,#ff5e62);
+color:white;
+cursor:pointer;
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+<div class="chat-box" id="chatBox"></div>
+
+<div class="input-box">
+<input type="text" id="userInput" placeholder="Type message...">
+<button onclick="sendMessage()">Send</button>
+</div>
+</div>
+
+<script>
+const API_KEY = "PASTE_YOUR_OPENROUTER_KEY_HERE";
+const MODEL = "deepseek/deepseek-r1:free";
+
+async function sendMessage(){
+let input = document.getElementById("userInput");
+let message = input.value.trim();
+if(!message) return;
+
+addMessage(message,"user");
+input.value="";
+
+let botMsg = addMessage("Thinking...","bot");
+
+let response = await fetch("https://openrouter.ai/api/v1/chat/completions",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+API_KEY
+},
+body:JSON.stringify({
+model:MODEL,
+messages:[{role:"user",content:message}]
+})
+});
+
+let data = await response.json();
+botMsg.innerText = data.choices[0].message.content;
+}
+
+function addMessage(text,type){
+let msg = document.createElement("div");
+msg.className="message "+type;
+msg.innerText=text;
+document.getElementById("chatBox").appendChild(msg);
+document.getElementById("chatBox").scrollTop=999999;
+return msg;
+}
+</script>
+
+</body>
+</html>
